@@ -1,0 +1,8 @@
+{
+    "vs-code-prettier-eslint.prettierLast": false,
+    "css.lint.unknownAtRules": "ignore",
+    "tailwindCSS.includeLanguages": {
+        "\"plaintext\"": "\"html\""
+    },
+    "postman.settings.dotenv-detection-notification-visibility": false
+}
