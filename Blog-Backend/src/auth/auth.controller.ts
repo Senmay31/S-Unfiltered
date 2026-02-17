@@ -58,6 +58,21 @@ export class AuthController {
     return this.authService.refreshTokens(req.user.sub, req.user.refreshToken);
   }
 
+  @Post('forgot-password')
+  async forgotPassword(
+    @Body('email') email: string,
+  ): Promise<boolean> {
+    return this.authService.forgotPassword(email);
+  }
+
+  @Post('reset-password')
+  async resetPassword(
+    @Body('token') token: string,
+    @Body('newPassword') newPassword: string,
+  ): Promise<boolean> {
+    return this.authService.resetPassword(token, newPassword);
+  }
+
   // @Post('login')
   // async login(@Body() input: LoginUserDto,  @Res({ passthrough: true }) res: Response) {
 

@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
@@ -148,5 +149,65 @@ export class AuthService {
   async logoutAllUsers() {
     const count = await this.usersService.clearAllUserSessions();
     return { message: `${count} users have been logged out successfully!` };
+  }
+
+  async forgotPassword(email: string): Promise<boolean> {
+    const user = await this.usersService.findUserByEmail(email);
+    if (!user) return true;
+
+    const resetToken = this.jwtService.sign(
+      {
+        sub: user._id.toString(),
+        type: 'password-reset',
+      },
+      {
+        secret: process.env.JWT_RESET_SECRET,
+        expiresIn: '1h',
+      },
+    );
+
+    // TODO: send email via notification service
+
+    // const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+
+    // await this.notificationService.sendForgotPassword(
+    //   user.email,
+    //   resetLink,
+    // );
+
+    console.log(
+      `Reset link: http://localhost:3000/reset-password?token=${resetToken}`,
+    );
+
+    return true;
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<boolean> {
+    let payload: any;
+
+    try {
+      payload = this.jwtService.verify(token, {
+        secret: process.env.JWT_RESET_SECRET,
+      });
+    } catch {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+
+    if (payload.type !== 'password-reset') {
+      throw new UnauthorizedException('Invalid token type');
+    }
+
+    const user = await this.usersService.findById(payload.sub);
+
+    if (!user) throw new NotFoundException('User not found');
+
+    const hashedPass = await bcrypt.hash(
+      newPassword,
+      Number(process.env.SALT_ROUNDS),
+    );
+
+    await this.usersService.updatePassword(user._id.toString(), hashedPass);
+
+    return true;
   }
 }
