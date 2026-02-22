@@ -8,25 +8,27 @@ import { CommentsModule } from './comments/comments/comments.module';
 import { SubscribersModule } from './subscribers/subscribers/subscribers.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
-    // MongooseModule.forRoot(
-    //   process.env.MONGODB_URI ||
-    //     'mongodb+srv://Senmayor:Senalina@cluster0.bjxr4.mongodb.net/?appName=Cluster0',
-    // ),
-    MongooseModule.forRoot('mongodb://127.0.0.1:27017/test-db'),
+    MongooseModule.forRoot(process.env.MONGODB_URI || 'null'),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60,
+          limit: 5,
+        },
+      ],
+    }),
     ConfigModule.forRoot({ isGlobal: true }),
     UsersModule,
     AuthModule,
     // PostsModule,
-    // CommentsModule, 
+    // CommentsModule,
     // SubscribersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
-  
 })
-
-
 export class AppModule {}
